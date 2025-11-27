@@ -1,5 +1,5 @@
 {
-  "name": "digihive",
+  "name": "teamsync-workspace",
   "version": "1.0.0",
   "description": "Real-time team collaboration dashboard",
   "main": "server.js",
@@ -20,9 +20,8 @@
     "team",
     "collaboration",
     "dashboard",
-    "productivity",
-    "project-management"
+    "productivity"
   ],
-  "author": "DigiHive Team",
+  "author": "TeamSync Team",
   "license": "MIT"
 }
