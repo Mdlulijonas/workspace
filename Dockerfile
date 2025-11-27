@@ -14,8 +14,8 @@ COPY . .
 # Create uploads directory
 RUN mkdir -p uploads
 
-# Expose the port your app uses
-EXPOSE 10000
+# Use Railway's expected port
+EXPOSE 8080
 
 # Start the application
 CMD ["node", "server.js"]
