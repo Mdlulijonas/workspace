@@ -140,7 +140,7 @@ let comments = initialData?.comments || [
         id: 1,
         username: 'System Admin',
         team: 'Administrator',
-        text: 'Welcome to DigiHive! Team members can post comments about their tasks and challenges here.',
+        text: 'Welcome to TeamSync! Team members can post comments about their tasks and challenges here.',
         timestamp: new Date().toISOString()
     }
 ];
@@ -154,7 +154,7 @@ let tasks = initialData?.tasks || [
         startDate: "2026-01-13T09:00:00.000Z", 
         endDate: "2026-01-16T17:00:00.000Z", 
         description: "Set up cloud server environment. Configure database architecture. Implement basic security protocols. Create deployment pipeline.", 
-        team: "Full-Stack", 
+        team: "Development", 
         status: "pending",
         priority: "High"
     },
@@ -164,7 +164,7 @@ let tasks = initialData?.tasks || [
         startDate: "2026-01-14T09:00:00.000Z", 
         endDate: "2026-01-16T17:00:00.000Z", 
         description: "Design database schemas. Set up user tables and relationships. Implement data migration scripts. Create backup systems.", 
-        team: "Full-Stack", 
+        team: "Development", 
         status: "pending",
         priority: "High"
     },
@@ -174,7 +174,7 @@ let tasks = initialData?.tasks || [
         startDate: "2026-01-13T11:00:00.000Z", 
         endDate: "2026-01-16T17:00:00.000Z", 
         description: "Create brand color palette. Design typography system. Build component library. Establish design principles.", 
-        team: "UI/UX", 
+        team: "Design", 
         status: "pending",
         priority: "High"
     },
@@ -184,7 +184,7 @@ let tasks = initialData?.tasks || [
         startDate: "2026-01-14T11:00:00.000Z", 
         endDate: "2026-01-16T17:00:00.000Z", 
         description: "Create homepage wireframes. Design user onboarding flow. Map seller dashboard layout. Prototype product listing pages.", 
-        team: "UI/UX", 
+        team: "Design", 
         status: "pending",
         priority: "High"
     },
@@ -264,7 +264,7 @@ let users = initialData?.users || [
     { 
         username: 'developer', 
         password: 'password', 
-        team: 'Full-Stack', 
+        team: 'Development', 
         isOnline: false, 
         lastLogin: null, 
         lastLogout: null, 
@@ -274,7 +274,7 @@ let users = initialData?.users || [
     { 
         username: 'designer', 
         password: 'password', 
-        team: 'UI/UX', 
+        team: 'Design', 
         isOnline: false, 
         lastLogin: null, 
         lastLogout: null, 
@@ -542,6 +542,68 @@ app.get('/api/tasks', (req, res) => {
     }
 });
 
+app.post('/api/tasks', (req, res) => {
+    try {
+        const { action, taskData, adminCode, taskId } = req.body;
+        
+        if (action === 'create') {
+            if (adminCode !== ADMIN_CODE) {
+                return res.status(401).json({ error: 'Invalid admin code' });
+            }
+            
+            const newTask = {
+                id: Date.now(),
+                ...taskData
+            };
+            tasks.push(newTask);
+            saveData();
+            res.status(201).json(newTask);
+        }
+        else if (action === 'update') {
+            if (adminCode !== ADMIN_CODE) {
+                return res.status(401).json({ error: 'Invalid admin code' });
+            }
+            
+            const taskIndex = tasks.findIndex(t => t.id == taskId);
+            if (taskIndex === -1) {
+                return res.status(404).json({ error: 'Task not found' });
+            }
+            
+            tasks[taskIndex] = { ...tasks[taskIndex], ...taskData };
+            saveData();
+            res.json(tasks[taskIndex]);
+        }
+        else {
+            res.status(400).json({ error: 'Invalid action' });
+        }
+    } catch (error) {
+        console.error('Error in tasks API:', error);
+        res.status(500).json({ error: 'Failed to process task' });
+    }
+});
+
+app.delete('/api/tasks', (req, res) => {
+    try {
+        const { taskId, adminCode } = req.body;
+        
+        if (adminCode !== ADMIN_CODE) {
+            return res.status(401).json({ error: 'Invalid admin code' });
+        }
+        
+        const taskIndex = tasks.findIndex(t => t.id == taskId);
+        if (taskIndex === -1) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+        
+        tasks.splice(taskIndex, 1);
+        saveData();
+        res.json({ message: 'Task deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting task:', error);
+        res.status(500).json({ error: 'Failed to delete task' });
+    }
+});
+
 // Users API
 app.get('/api/users', (req, res) => {
     try {
@@ -707,12 +769,12 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Get port from environment variable (Render provides this)
-const PORT = process.env.PORT || 10000;
+// CRITICAL FIX: Use Railway's expected port (8080) or environment variable
+const PORT = process.env.PORT || 8080;
 
 // Listen on all network interfaces
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 DigiHive server running on port ${PORT}`);
+    console.log(`🚀 TeamSync server running on port ${PORT}`);
     console.log(`📊 API endpoints available at /api/comments, /api/submissions, /api/tasks, /api/users`);
     console.log(`🌐 Frontend served from: http://0.0.0.0:${PORT}`);
     console.log(`💾 Uploads directory: ${uploadsDir}`);
